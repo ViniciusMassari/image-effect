@@ -7,19 +7,30 @@ use image::ImageFormat::Png;
 
 
 #[wasm_bindgen]
-pub fn grayscale(encoded_file: &str) -> String{
+pub fn apply_effect(encoded_file: &str, opt:Option<String>, blur_sigma: Option<f32>) -> String{
+    // max to 20.00 blur min of 0.3
+    let blur_sigma_value = blur_sigma.unwrap_or(20.00);
+    let option = opt.unwrap_or(String::from("grayscale"));
     log(&"grayscale() called!".into());
     let base64_to_vector = BASE64_STANDARD.decode(&encoded_file).unwrap();
     log(&"Image decoded!".into());
     let mut img = load_from_memory(&base64_to_vector).unwrap();
     log(&"Image loaded!".into());
 
-    // modificamos a imagem, pois não precisaremos mais da imagem original
-    // após mudarmos ela
-    img = img.grayscale();
 
-    log(&"Grayscale applied!".into());
+    if option == "blur" {
+            log(&"blur chosen".into());
+        img = img.blur(blur_sigma_value);
+    }
 
+    if option == "grayscale" {
+                  log(&"grayscale chosen".into());
+        img = img.grayscale();
+               log(&"blur applied".into());
+    }
+    
+    log(&"Effect applied!".into());
+    
     let mut buffer = vec![];
 
     img.write_to(&mut Cursor::new(&mut buffer), Png).unwrap();
